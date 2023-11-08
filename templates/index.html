@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spam Email Classifier</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            background-color: #007BFF;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        input[type="submit"] {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+        }
+
+        #result {
+            margin-top: 15px;
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            font-size: 24px;
+        }
+
+        #validation-message {
+            text-align: center;
+            color: red;
+        }
+
+        .ham-result {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .spam-result {
+            background-color: #FF5733;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Spam Email Classifier</h1>
+    <form method="POST" action="/classify" id="email-form">
+        <label for="email_text">Enter Email Text:</label>
+        <textarea name="email_text" id="email_text" rows="4" cols="50"></textarea>
+        <input type="submit" value="Classify">
+    </form>
+
+    <div id="validation-message"></div> <!-- Validation message will be displayed here -->
+    <div id="result"></div> <!-- Result will be displayed here -->
+
+    <script>
+    const emailText = document.getElementById('email_text');
+    const resultDiv = document.getElementById('result');
+    const validationMessage = document.getElementById('validation-message');
+
+    emailText.addEventListener('input', function() {
+        resultDiv.textContent = "";
+        validationMessage.textContent = "";
+    });
+
+    document.getElementById('email-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const inputText = emailText.value;
+
+        if (inputText.trim() === "") {
+            validationMessage.textContent = "Please enter text before classifying.";
+            return;
+        } else {
+            validationMessage.textContent = "";
+        }
+
+        // Clear existing CSS classes
+        resultDiv.classList.remove("ham-result", "spam-result");
+
+        fetch('/classify', {
+            method: 'POST',
+            body: new URLSearchParams({ email_text: inputText }),
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            resultDiv.textContent = data.result;
+
+            if (data.result.includes("SPAM")) {
+                resultDiv.classList.add("spam-result");
+            } else {
+                resultDiv.classList.add("ham-result");
+            }
+            });
+        });
+    </script>
+
+</body>
+</html>
